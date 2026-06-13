@@ -15,18 +15,27 @@ export type SessionProfile = {
 };
 
 type SafeAuthError = {
+  code: string | null;
   message: string;
+  name: string | null;
   status: number | null;
 };
 
 function getSafeAuthError(error: unknown): SafeAuthError {
-  const maybeError = error as { message?: unknown; status?: unknown };
+  const maybeError = error as {
+    code?: unknown;
+    message?: unknown;
+    name?: unknown;
+    status?: unknown;
+  };
 
   return {
+    code: typeof maybeError.code === "string" ? maybeError.code : null,
     message:
       typeof maybeError.message === "string"
         ? maybeError.message
         : "Unknown auth error",
+    name: typeof maybeError.name === "string" ? maybeError.name : null,
     status: typeof maybeError.status === "number" ? maybeError.status : null,
   };
 }
@@ -80,9 +89,11 @@ export async function signIn(email: string, password: string) {
   });
 
   if (error) {
-    console.error("[auth] signInWithPassword failed", {
-      ...getSafeAuthError(error),
-      ...getSupabaseBrowserEnvStatus(),
+    console.error("[AUTH LOGIN]", {
+      message: error?.message,
+      status: error?.status,
+      code: error?.code,
+      name: error?.name,
     });
 
     throw error;

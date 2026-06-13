@@ -23,13 +23,20 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 function getSafeErrorDetails(error: unknown) {
-  const maybeError = error as { message?: unknown; status?: unknown };
+  const maybeError = error as {
+    code?: unknown;
+    message?: unknown;
+    name?: unknown;
+    status?: unknown;
+  };
 
   return {
+    code: typeof maybeError.code === "string" ? maybeError.code : null,
     message:
       typeof maybeError.message === "string"
         ? maybeError.message
         : "Unknown login error",
+    name: typeof maybeError.name === "string" ? maybeError.name : null,
     status: typeof maybeError.status === "number" ? maybeError.status : null,
   };
 }
@@ -96,11 +103,13 @@ export default function EntrarPage() {
 
       setFormError("Perfil sem permissão configurada. Fale com o administrador.");
     } catch (error) {
+      const errorDetails = getSafeErrorDetails(error);
+
       console.error("[auth] Login flow failed", {
-        ...getSafeErrorDetails(error),
+        ...errorDetails,
         ...getSupabaseBrowserEnvStatus(),
       });
-      setFormError("Não foi possível entrar. Confira email e senha.");
+      setFormError(`Não foi possível entrar:\n${errorDetails.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -158,7 +167,7 @@ export default function EntrarPage() {
               ) : null}
             </label>
             {formError ? (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+              <p className="whitespace-pre-line rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
                 {formError}
               </p>
             ) : null}

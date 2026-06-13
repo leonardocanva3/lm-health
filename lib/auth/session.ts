@@ -1,6 +1,9 @@
 import type { Session, User } from "@supabase/supabase-js";
 
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import {
+  createBrowserSupabaseClient,
+  getSupabaseBrowserEnvStatus,
+} from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/auth/roles";
 
 export type SessionProfile = {
@@ -10,6 +13,34 @@ export type SessionProfile = {
   email: string;
   role: UserRole;
 };
+
+type SafeAuthError = {
+  message: string;
+  status: number | null;
+};
+
+function getSafeAuthError(error: unknown): SafeAuthError {
+  const maybeError = error as { message?: unknown; status?: unknown };
+
+  return {
+    message:
+      typeof maybeError.message === "string"
+        ? maybeError.message
+        : "Unknown auth error",
+    status: typeof maybeError.status === "number" ? maybeError.status : null,
+  };
+}
+
+async function logServerAuthDiagnostics() {
+  try {
+    await fetch("/api/auth/diagnostics", {
+      cache: "no-store",
+      method: "GET",
+    });
+  } catch (error) {
+    console.warn("[auth] Server diagnostics request failed", getSafeAuthError(error));
+  }
+}
 
 export async function getCurrentSession(): Promise<Session | null> {
   const supabase = createBrowserSupabaseClient();
@@ -35,14 +66,33 @@ export async function getCurrentUser(): Promise<User | null> {
 
 export async function signIn(email: string, password: string) {
   const supabase = createBrowserSupabaseClient();
+  console.info("[auth] Starting password sign-in", {
+    ...getSupabaseBrowserEnvStatus(),
+    hasWindow: typeof window !== "undefined",
+    storage: "localStorage",
+  });
+
+  await logServerAuthDiagnostics();
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
+    console.error("[auth] signInWithPassword failed", {
+      ...getSafeAuthError(error),
+      ...getSupabaseBrowserEnvStatus(),
+    });
+
     throw error;
   }
+
+  console.info("[auth] signInWithPassword succeeded", {
+    ...getSupabaseBrowserEnvStatus(),
+    hasSession: Boolean(data.session),
+    hasUser: Boolean(data.user),
+  });
 
   return data;
 }

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/Input";
 import { getCurrentSessionProfile, signIn } from "@/lib/auth/session";
 import { isAdmin, isPatient } from "@/lib/auth/roles";
 import { ROUTES } from "@/lib/constants/routes";
+import { getSupabaseBrowserEnvStatus } from "@/lib/supabase/client";
 
 const loginSchema = z.object({
   email: z.string().email("Informe um email válido."),
@@ -20,6 +21,18 @@ const loginSchema = z.object({
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
+
+function getSafeErrorDetails(error: unknown) {
+  const maybeError = error as { message?: unknown; status?: unknown };
+
+  return {
+    message:
+      typeof maybeError.message === "string"
+        ? maybeError.message
+        : "Unknown login error",
+    status: typeof maybeError.status === "number" ? maybeError.status : null,
+  };
+}
 
 export default function EntrarPage() {
   const router = useRouter();
@@ -64,6 +77,9 @@ export default function EntrarPage() {
       const profile = await getCurrentSessionProfile();
 
       if (!profile) {
+        console.warn("[auth] Login succeeded but profile was not found", {
+          ...getSupabaseBrowserEnvStatus(),
+        });
         setProfileMissing(true);
         return;
       }
@@ -79,7 +95,11 @@ export default function EntrarPage() {
       }
 
       setFormError("Perfil sem permissão configurada. Fale com o administrador.");
-    } catch {
+    } catch (error) {
+      console.error("[auth] Login flow failed", {
+        ...getSafeErrorDetails(error),
+        ...getSupabaseBrowserEnvStatus(),
+      });
       setFormError("Não foi possível entrar. Confira email e senha.");
     } finally {
       setIsSubmitting(false);

@@ -2,8 +2,11 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/auth/roles";
 import {
-  ensurePatientAuthAccess,
-  getPatientRedirectUrl,
+  createPatientAccessToken,
+  getPatientAccessBaseUrl,
+  hashPatientAccessToken,
+  normalizeBrazilPhone,
+  PATIENT_ACCESS_TOKEN_DAYS,
   type PatientAccessPatient,
 } from "@/lib/patient-access/server";
 
@@ -101,6 +104,10 @@ async function getAuthorizedAdmin(request: Request) {
   return { adminClient, profile };
 }
 
+function buildWhatsAppMessage(patientName: string, accessLink: string) {
+  return `Olá, ${patientName}! Sua Área do Paciente foi criada.\n\nAcesse pelo link seguro:\n${accessLink}\n\nPor lá você poderá visualizar orientações, materiais e informações compartilhadas durante o acompanhamento.`;
+}
+
 export async function POST(request: Request) {
   try {
     const auth = await getAuthorizedAdmin(request);
@@ -142,38 +149,51 @@ export async function POST(request: Request) {
       return jsonError("Paciente nao encontrado neste workspace.", 404);
     }
 
-    const patientEmail = patient.email?.trim().toLowerCase();
-
-    if (!patientEmail) {
-      return jsonError("Cadastre um email para enviar o acesso.");
+    if (!patient.active) {
+      return jsonError("Ative o paciente antes de enviar o acesso.");
     }
 
-    await ensurePatientAuthAccess({ adminClient, patient, workspaceId });
+    const phone = normalizeBrazilPhone(patient.phone);
 
-    const emailRedirectTo = getPatientRedirectUrl();
-    const otpClient = createServerSupabaseClient();
-    const { error: otpError } = await otpClient.auth.signInWithOtp({
-      email: patientEmail,
-      options: {
-        emailRedirectTo,
-        shouldCreateUser: false,
-      },
-    });
+    if (!phone) {
+      return jsonError("Cadastre um telefone para enviar o acesso pelo WhatsApp.");
+    }
 
-    if (otpError) {
-      return jsonError("Nao foi possivel enviar o link de acesso.", 500, {
-        errorMessage: otpError.message,
+    const token = createPatientAccessToken();
+    const tokenHash = hashPatientAccessToken(token);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + PATIENT_ACCESS_TOKEN_DAYS);
+
+    const { error: tokenError } = await adminClient
+      .from("patient_access_tokens")
+      .insert({
+        expires_at: expiresAt.toISOString(),
+        patient_id: patient.id,
+        token_hash: tokenHash,
+        workspace_id: workspaceId,
+      });
+
+    if (tokenError) {
+      return jsonError("Nao foi possivel gerar o link seguro.", 500, {
+        errorMessage: tokenError.message,
       });
     }
 
+    const accessLink = `${getPatientAccessBaseUrl()}/paciente/acessar?token=${encodeURIComponent(token)}`;
+    const message = buildWhatsAppMessage(patient.name, accessLink);
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
     return Response.json({
-      message: "Link de acesso enviado para o paciente.",
+      accessLink,
+      expiresAt: expiresAt.toISOString(),
+      message,
+      whatsappUrl,
     });
   } catch (error) {
     return jsonError(
       error instanceof Error
         ? error.message
-        : "Nao foi possivel enviar o link de acesso.",
+        : "Nao foi possivel gerar o acesso por WhatsApp.",
       500,
       { hasServiceRoleKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) },
     );

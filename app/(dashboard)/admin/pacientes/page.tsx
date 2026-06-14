@@ -34,6 +34,7 @@ export default function AdminPatientsPage() {
   const router = useRouter();
   const [busyAccessPatientId, setBusyAccessPatientId] = useState<string | null>(null);
   const [busyPatientId, setBusyPatientId] = useState<string | null>(null);
+  const [busyWhatsAppPatientId, setBusyWhatsAppPatientId] = useState<string | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientRow | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasSession, setHasSession] = useState(false);
@@ -189,6 +190,59 @@ export default function AdminPatientsPage() {
     }
   }
 
+  async function handleSendWhatsApp(patient: PatientRow) {
+    if (!patient.phone) {
+      setErrorMessage("Cadastre um telefone para enviar o acesso pelo WhatsApp.");
+      return;
+    }
+
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setBusyWhatsAppPatientId(patient.id);
+
+    try {
+      const supabase = createBrowserSupabaseClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error("Sessão ausente. Entre novamente para enviar o acesso.");
+      }
+
+      const response = await fetch("/api/patient-access/whatsapp", {
+        body: JSON.stringify({ patientId: patient.id }),
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+
+      const payload = (await response.json()) as {
+        error?: string;
+        whatsappUrl?: string;
+      };
+
+      if (!response.ok || !payload.whatsappUrl) {
+        throw new Error(
+          payload.error ?? "Não foi possível gerar o acesso por WhatsApp.",
+        );
+      }
+
+      window.open(payload.whatsappUrl, "_blank", "noopener,noreferrer");
+      setSuccessMessage("Mensagem de WhatsApp pronta para envio.");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível gerar o acesso por WhatsApp.",
+      );
+    } finally {
+      setBusyWhatsAppPatientId(null);
+    }
+  }
+
   async function handleToggleActive(patient: PatientRow) {
     if (!profile?.workspaceId) {
       setErrorMessage("Seu perfil não está vinculado a um ambiente.");
@@ -316,8 +370,10 @@ export default function AdminPatientsPage() {
           <PatientsTable
             busyAccessPatientId={busyAccessPatientId}
             busyPatientId={busyPatientId}
+            busyWhatsAppPatientId={busyWhatsAppPatientId}
             onEdit={setEditingPatient}
             onSendAccess={handleSendAccess}
+            onSendWhatsApp={handleSendWhatsApp}
             onToggleActive={handleToggleActive}
             patients={patients}
           />

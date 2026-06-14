@@ -10,8 +10,10 @@ import type { PatientRow } from "@/lib/patients/queries";
 type PatientsTableProps = {
   busyAccessPatientId?: string | null;
   busyPatientId?: string | null;
+  busyWhatsAppPatientId?: string | null;
   onEdit: (patient: PatientRow) => void;
   onSendAccess: (patient: PatientRow) => void;
+  onSendWhatsApp: (patient: PatientRow) => void;
   onToggleActive: (patient: PatientRow) => void;
   patients: PatientRow[];
 };
@@ -19,8 +21,10 @@ type PatientsTableProps = {
 export function PatientsTable({
   busyAccessPatientId,
   busyPatientId,
+  busyWhatsAppPatientId,
   onEdit,
   onSendAccess,
+  onSendWhatsApp,
   onToggleActive,
   patients,
 }: PatientsTableProps) {
@@ -76,6 +80,11 @@ export function PatientsTable({
                   <p className="mt-1 text-xs text-slate-500">
                     {patient.phone ?? "Telefone não informado"}
                   </p>
+                  {!patient.email && !patient.phone ? (
+                    <p className="mt-2 text-xs font-medium text-amber-700">
+                      Cadastre email ou telefone para enviar acesso.
+                    </p>
+                  ) : null}
                 </td>
                 <td className="px-6 py-5 text-sm text-slate-600">
                   {patient.birth_date
@@ -97,6 +106,19 @@ export function PatientsTable({
                       Editar
                     </Button>
                     <Button
+                      disabled={!patient.phone || busyWhatsAppPatientId === patient.id}
+                      onClick={() => onSendWhatsApp(patient)}
+                      title={
+                        patient.phone
+                          ? "Abrir WhatsApp com link seguro do paciente"
+                          : "Cadastre um telefone para enviar pelo WhatsApp"
+                      }
+                      type="button"
+                      variant="secondary"
+                    >
+                      {busyWhatsAppPatientId === patient.id ? "Gerando..." : "WhatsApp"}
+                    </Button>
+                    <Button
                       disabled={!patient.email || busyAccessPatientId === patient.id}
                       onClick={() => onSendAccess(patient)}
                       title={
@@ -109,7 +131,7 @@ export function PatientsTable({
                     >
                       {busyAccessPatientId === patient.id
                         ? "Enviando..."
-                        : "Enviar acesso"}
+                        : "Enviar acesso por e-mail"}
                     </Button>
                     <Button
                       disabled={busyPatientId === patient.id}

@@ -215,6 +215,30 @@ export type Database = {
         >;
         Relationships: [];
       };
+      patient_access_tokens: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          patient_id: string;
+          token_hash: string;
+          expires_at: string;
+          used_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          patient_id: string;
+          token_hash: string;
+          expires_at: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["patient_access_tokens"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

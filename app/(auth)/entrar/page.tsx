@@ -109,7 +109,7 @@ export default function EntrarPage() {
         ...errorDetails,
         ...getSupabaseBrowserEnvStatus(),
       });
-      setFormError(`Não foi possível entrar:\n${errorDetails.message}`);
+      setFormError("Não foi possível entrar. Confira email e senha.");
     } finally {
       setIsSubmitting(false);
     }
@@ -167,7 +167,7 @@ export default function EntrarPage() {
               ) : null}
             </label>
             {formError ? (
-              <p className="whitespace-pre-line rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
                 {formError}
               </p>
             ) : null}

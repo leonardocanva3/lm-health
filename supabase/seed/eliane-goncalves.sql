@@ -243,7 +243,6 @@ insert into public.patient_notes (
   professional_id,
   title,
   content,
-  emoji,
   active,
   updated_at
 )
@@ -254,7 +253,6 @@ select
   admin_ref.id,
   note.title,
   note.content,
-  note.emoji,
   note.active,
   now()
 from workspace_ref, admin_ref, patient_ref,
@@ -263,17 +261,15 @@ from workspace_ref, admin_ref, patient_ref,
       'a3333333-3333-4333-8333-333333333333'::uuid,
       'Orientacao ativa do piloto',
       'Mensagem ativa de teste para validar a area do paciente da Eliane.',
-      'OK',
       true
     ),
     (
       'a4444444-4444-4444-8444-444444444444'::uuid,
       'Orientacao inativa do piloto',
       'Mensagem inativa de teste que nao deve aparecer para o paciente.',
-      'OFF',
       false
     )
-  ) as note(id, title, content, emoji, active)
+  ) as note(id, title, content, active)
 on conflict (id) do update
 set
   workspace_id = excluded.workspace_id,
@@ -281,7 +277,6 @@ set
   professional_id = excluded.professional_id,
   title = excluded.title,
   content = excluded.content,
-  emoji = excluded.emoji,
   active = excluded.active,
   updated_at = now();
 
@@ -306,7 +301,6 @@ insert into public.patient_resources (
   storage_path,
   filename,
   mime_type,
-  emoji,
   active,
   updated_at
 )
@@ -322,7 +316,6 @@ select
   null,
   null,
   null,
-  resource.emoji,
   resource.active,
   now()
 from workspace_ref, admin_ref, patient_ref,
@@ -333,7 +326,6 @@ from workspace_ref, admin_ref, patient_ref,
       'Recurso ativo do piloto',
       'Material ativo de teste para validar a area do paciente da Eliane.',
       'https://example.com/material-ativo-piloto-eliane.pdf',
-      'OK',
       true
     ),
     (
@@ -342,10 +334,9 @@ from workspace_ref, admin_ref, patient_ref,
       'Recurso inativo do piloto',
       'Material inativo de teste que nao deve aparecer para o paciente.',
       'https://example.com/material-inativo-piloto-eliane.pdf',
-      'OFF',
       false
     )
-  ) as resource(id, type, title, description, url, emoji, active)
+  ) as resource(id, type, title, description, url, active)
 on conflict (id) do update
 set
   workspace_id = excluded.workspace_id,
@@ -358,7 +349,6 @@ set
   storage_path = excluded.storage_path,
   filename = excluded.filename,
   mime_type = excluded.mime_type,
-  emoji = excluded.emoji,
   active = excluded.active,
   updated_at = now();
 

@@ -229,13 +229,13 @@ export default function AdminPage() {
   const activities = [
     ...latestResources.map(
       (resource) =>
-        `${resource.emoji || "🔗"} ${resource.title} para ${
+        `${resource.title} para ${
           resource.patient_name ?? "paciente"
         }`,
     ),
     ...latestNotes.map(
       (note) =>
-        `${note.emoji || "💬"} ${note.title || "Orientação"} para ${
+        `${note.title || "Orientação"} para ${
           note.patient_name ?? "paciente"
         }`,
     ),

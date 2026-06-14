@@ -24,14 +24,11 @@ export function PatientNotesTable({
   if (notes.length === 0) {
     return (
       <Card className="p-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl">
-          💬
-        </div>
-        <h2 className="mt-4 text-lg font-semibold text-slate-950">
-          Nenhuma orientação cadastrada
+        <h2 className="text-lg font-semibold text-slate-950">
+          Nenhuma orientacao cadastrada
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
-          Crie a primeira orientação personalizada para um paciente do ambiente.
+          Crie a primeira orientacao personalizada para um paciente do ambiente.
         </p>
       </Card>
     );
@@ -40,7 +37,7 @@ export function PatientNotesTable({
   return (
     <Card className="overflow-hidden p-0">
       <div className="border-b border-slate-200 px-6 py-5">
-        <h2 className="text-xl font-semibold text-slate-950">Orientações</h2>
+        <h2 className="text-xl font-semibold text-slate-950">Orientacoes</h2>
         <p className="mt-1 text-sm text-slate-500">
           Notas personalizadas do ambiente logado.
         </p>
@@ -49,11 +46,11 @@ export function PatientNotesTable({
         <table className="w-full min-w-[860px] border-collapse text-left">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50/80 text-xs uppercase text-slate-500">
-              <th className="px-6 py-3 font-medium">Orientação</th>
+              <th className="px-6 py-3 font-medium">Orientacao</th>
               <th className="px-6 py-3 font-medium">Paciente</th>
               <th className="px-6 py-3 font-medium">Data</th>
               <th className="px-6 py-3 font-medium">Status</th>
-              <th className="px-6 py-3 text-right font-medium">Ações</th>
+              <th className="px-6 py-3 text-right font-medium">Acoes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -61,8 +58,7 @@ export function PatientNotesTable({
               <tr key={note.id}>
                 <td className="max-w-sm px-6 py-5">
                   <p className="text-sm font-semibold text-slate-950">
-                    <span className="mr-2">{note.emoji || "💬"}</span>
-                    {note.title || "Orientação"}
+                    {note.title || "Orientacao"}
                   </p>
                   <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
                     {note.content}

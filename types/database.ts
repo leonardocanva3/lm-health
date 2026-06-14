@@ -161,7 +161,6 @@ export type Database = {
           professional_id: string | null;
           title: string | null;
           content: string | null;
-          emoji: string;
           active: boolean;
           created_at: string;
           updated_at: string;
@@ -173,7 +172,6 @@ export type Database = {
           professional_id?: string | null;
           title?: string | null;
           content?: string | null;
-          emoji?: string;
           active?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -194,7 +192,6 @@ export type Database = {
           storage_path: string | null;
           filename: string | null;
           mime_type: string | null;
-          emoji: string | null;
           active: boolean;
           created_at: string;
           updated_at: string;
@@ -211,7 +208,6 @@ export type Database = {
           storage_path?: string | null;
           filename?: string | null;
           mime_type?: string | null;
-          emoji?: string | null;
           active?: boolean;
           created_at?: string;
           updated_at?: string;

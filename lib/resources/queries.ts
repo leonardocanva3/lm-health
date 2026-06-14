@@ -13,7 +13,7 @@ type PatientResourceQueryRow = PatientResourceRow & {
 };
 
 const resourceSelect =
-  "id, workspace_id, patient_id, professional_id, type, title, description, url, storage_path, filename, mime_type, emoji, active, created_at, updated_at, patients(name)";
+  "id, workspace_id, patient_id, professional_id, type, title, description, url, storage_path, filename, mime_type, active, created_at, updated_at, patients(name)";
 
 function mapResource(row: PatientResourceQueryRow): PatientResourceWithPatient {
   return {

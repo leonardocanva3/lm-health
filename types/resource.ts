@@ -23,7 +23,6 @@ export type PatientResource = {
   storagePath: string | null;
   filename: string | null;
   mimeType: string | null;
-  emoji: string | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;

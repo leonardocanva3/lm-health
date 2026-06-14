@@ -12,7 +12,7 @@ type PatientNoteQueryRow = PatientNoteRow & {
 };
 
 const noteSelect =
-  "id, workspace_id, patient_id, professional_id, title, content, emoji, active, created_at, updated_at, patients(name)";
+  "id, workspace_id, patient_id, professional_id, title, content, active, created_at, updated_at, patients(name)";
 
 function mapNote(row: PatientNoteQueryRow): PatientNoteWithPatient {
   return {

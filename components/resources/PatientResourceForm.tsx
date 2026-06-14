@@ -41,7 +41,6 @@ function getDefaultValues(
     title: resource?.title ?? "",
     description: resource?.description ?? "",
     url: resource?.url ?? "",
-    emoji: resource?.emoji ?? "🔗",
     active: resource?.active ?? true,
   };
 }
@@ -83,7 +82,6 @@ export function PatientResourceForm({
           field === "title" ||
           field === "description" ||
           field === "url" ||
-          field === "emoji" ||
           field === "active"
         ) {
           setError(field, { message: issue.message });
@@ -103,7 +101,7 @@ export function PatientResourceForm({
         reset(getDefaultValues(null));
       }
     } catch {
-      setFormError("Não foi possível salvar o recurso. Tente novamente.");
+      setFormError("Nao foi possivel salvar o recurso. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +114,7 @@ export function PatientResourceForm({
           {isEditing ? "Editar recurso" : "Novo recurso"}
         </h2>
         <p className="mt-1 text-sm leading-6 text-slate-500">
-          Adicione links, vídeos, PDFs por URL e outros materiais sem upload.
+          Adicione links, videos, PDFs por URL e outros materiais sem upload.
         </p>
       </div>
       <form className="mt-6 space-y-4" onSubmit={handleSubmit(submit)}>
@@ -139,27 +137,21 @@ export function PatientResourceForm({
             </span>
           ) : null}
         </label>
-        <div className="grid gap-4 sm:grid-cols-[0.35fr_0.65fr]">
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Emoji</span>
-            <Input className="mt-2" placeholder="🔗" {...register("emoji")} />
-          </label>
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Tipo</span>
-            <select
-              className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-              {...register("type")}
-            >
-              {RESOURCE_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {typeLabels[type]}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
         <label className="block">
-          <span className="text-sm font-medium text-slate-700">Título</span>
+          <span className="text-sm font-medium text-slate-700">Tipo</span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none transition-colors focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            {...register("type")}
+          >
+            {RESOURCE_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {typeLabels[type]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">Titulo</span>
           <Input
             className="mt-2"
             placeholder="Nome do recurso"
@@ -186,7 +178,7 @@ export function PatientResourceForm({
           ) : null}
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-slate-700">Descrição</span>
+          <span className="text-sm font-medium text-slate-700">Descricao</span>
           <textarea
             className="mt-2 min-h-28 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             placeholder="Como o paciente deve usar este recurso?"
@@ -213,12 +205,12 @@ export function PatientResourceForm({
             {isSubmitting
               ? "Salvando..."
               : isEditing
-                ? "Salvar alterações"
+                ? "Salvar alteracoes"
                 : "Criar recurso"}
           </Button>
           {isEditing ? (
             <Button onClick={onCancelEdit} type="button" variant="secondary">
-              Cancelar edição
+              Cancelar edicao
             </Button>
           ) : null}
         </div>

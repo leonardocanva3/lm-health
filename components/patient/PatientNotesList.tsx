@@ -10,9 +10,8 @@ export function PatientNotesList({ notes }: PatientNotesListProps) {
   if (notes.length === 0) {
     return (
       <EmptyState
-        description="Quando o profissional enviar uma orientação para você, ela ficará disponível aqui."
-        emoji="📝"
-        title="Nenhuma orientação por enquanto"
+        description="Quando o profissional enviar uma orientacao para voce, ela ficara disponivel aqui."
+        title="Nenhuma orientacao por enquanto"
       />
     );
   }

@@ -25,7 +25,6 @@ function getDefaultValues(note?: PatientNoteWithPatient | null): PatientNoteForm
     patient_id: note?.patient_id ?? "",
     title: note?.title ?? "",
     content: note?.content ?? "",
-    emoji: note?.emoji ?? "💬",
     active: note?.active ?? true,
   };
 }
@@ -65,14 +64,13 @@ export function PatientNoteForm({
           field === "patient_id" ||
           field === "title" ||
           field === "content" ||
-          field === "emoji" ||
           field === "active"
         ) {
           setError(field, { message: issue.message });
         }
       }
 
-      setFormError("Revise os dados da orientação.");
+      setFormError("Revise os dados da orientacao.");
       return;
     }
 
@@ -85,7 +83,7 @@ export function PatientNoteForm({
         reset(getDefaultValues(null));
       }
     } catch {
-      setFormError("Não foi possível salvar a orientação. Tente novamente.");
+      setFormError("Nao foi possivel salvar a orientacao. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -95,10 +93,10 @@ export function PatientNoteForm({
     <Card className="p-6">
       <div>
         <h2 className="text-xl font-semibold text-slate-950">
-          {isEditing ? "Editar orientação" : "Nova orientação"}
+          {isEditing ? "Editar orientacao" : "Nova orientacao"}
         </h2>
         <p className="mt-1 text-sm leading-6 text-slate-500">
-          Escreva uma orientação personalizada para um paciente ativo.
+          Escreva uma orientacao personalizada para um paciente ativo.
         </p>
       </div>
       <form className="mt-6 space-y-4" onSubmit={handleSubmit(submit)}>
@@ -121,35 +119,24 @@ export function PatientNoteForm({
             </span>
           ) : null}
         </label>
-        <div className="grid gap-4 sm:grid-cols-[0.35fr_1fr]">
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Emoji</span>
-            <Input className="mt-2" placeholder="💬" {...register("emoji")} />
-            {errors.emoji ? (
-              <span className="mt-1 block text-sm text-red-700">
-                {errors.emoji.message}
-              </span>
-            ) : null}
-          </label>
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Título</span>
-            <Input
-              className="mt-2"
-              placeholder="Orientação para a semana"
-              {...register("title")}
-            />
-            {errors.title ? (
-              <span className="mt-1 block text-sm text-red-700">
-                {errors.title.message}
-              </span>
-            ) : null}
-          </label>
-        </div>
         <label className="block">
-          <span className="text-sm font-medium text-slate-700">Conteúdo</span>
+          <span className="text-sm font-medium text-slate-700">Titulo</span>
+          <Input
+            className="mt-2"
+            placeholder="Orientacao para a semana"
+            {...register("title")}
+          />
+          {errors.title ? (
+            <span className="mt-1 block text-sm text-red-700">
+              {errors.title.message}
+            </span>
+          ) : null}
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">Conteudo</span>
           <textarea
             className="mt-2 min-h-40 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-            placeholder="Escreva a orientação personalizada..."
+            placeholder="Escreva a orientacao personalizada..."
             {...register("content")}
           />
           {errors.content ? (
@@ -165,7 +152,7 @@ export function PatientNoteForm({
             {...register("active")}
           />
           <span className="text-sm font-medium text-slate-700">
-            Orientação ativa para o paciente
+            Orientacao ativa para o paciente
           </span>
         </label>
         {formError ? (
@@ -178,12 +165,12 @@ export function PatientNoteForm({
             {isSubmitting
               ? "Salvando..."
               : isEditing
-                ? "Salvar alterações"
-                : "Criar orientação"}
+                ? "Salvar alteracoes"
+                : "Criar orientacao"}
           </Button>
           {isEditing ? (
             <Button onClick={onCancelEdit} type="button" variant="secondary">
-              Cancelar edição
+              Cancelar edicao
             </Button>
           ) : null}
         </div>

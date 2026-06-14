@@ -245,7 +245,6 @@ insert into public.patient_notes (
   professional_id,
   title,
   content,
-  emoji,
   active,
   updated_at
 )
@@ -256,7 +255,6 @@ select
   admin_ref.id,
   note.title,
   note.content,
-  note.emoji,
   note.active,
   now()
 from workspace_ref, admin_ref, patient_ref,
@@ -265,17 +263,15 @@ from workspace_ref, admin_ref, patient_ref,
       '55555555-5555-5555-5555-555555555555'::uuid,
       'Orientacao ativa de teste',
       'Conteudo ativo visivel para validar a area do paciente.',
-      'OK',
       true
     ),
     (
       '66666666-6666-6666-6666-666666666666'::uuid,
       'Orientacao inativa de teste',
       'Conteudo inativo que nao deve aparecer para o paciente.',
-      'OFF',
       false
     )
-  ) as note(id, title, content, emoji, active)
+  ) as note(id, title, content, active)
 on conflict (id) do update
 set
   workspace_id = excluded.workspace_id,
@@ -283,7 +279,6 @@ set
   professional_id = excluded.professional_id,
   title = excluded.title,
   content = excluded.content,
-  emoji = excluded.emoji,
   active = excluded.active,
   updated_at = now();
 
@@ -308,7 +303,6 @@ insert into public.patient_resources (
   storage_path,
   filename,
   mime_type,
-  emoji,
   active,
   updated_at
 )
@@ -324,7 +318,6 @@ select
   null,
   null,
   null,
-  resource.emoji,
   resource.active,
   now()
 from workspace_ref, admin_ref, patient_ref,
@@ -335,7 +328,6 @@ from workspace_ref, admin_ref, patient_ref,
       'Recurso ativo de teste',
       'Material ativo visivel para validar a area do paciente.',
       'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      'OK',
       true
     ),
     (
@@ -344,10 +336,9 @@ from workspace_ref, admin_ref, patient_ref,
       'Recurso inativo de teste',
       'Material inativo que nao deve aparecer para o paciente.',
       'https://example.com/recurso-inativo.pdf',
-      'OFF',
       false
     )
-  ) as resource(id, type, title, description, url, emoji, active)
+  ) as resource(id, type, title, description, url, active)
 on conflict (id) do update
 set
   workspace_id = excluded.workspace_id,
@@ -360,7 +351,6 @@ set
   storage_path = excluded.storage_path,
   filename = excluded.filename,
   mime_type = excluded.mime_type,
-  emoji = excluded.emoji,
   active = excluded.active,
   updated_at = now();
 

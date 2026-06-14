@@ -24,7 +24,6 @@ export const patientResourceFormSchema = z.object({
     .refine((value) => value === "" || z.string().url().safeParse(value).success, {
       message: "Informe uma URL válida.",
     }),
-  emoji: z.string().trim().min(1, "Informe um emoji."),
   active: z.boolean(),
 });
 
@@ -36,7 +35,6 @@ export type PatientResourcePayload = {
   title: string;
   description: string | null;
   url: string | null;
-  emoji: string;
   active: boolean;
 };
 
@@ -51,7 +49,6 @@ export function toPatientResourcePayload(
     title: parsed.title,
     description: parsed.description || null,
     url: parsed.url || null,
-    emoji: parsed.emoji,
     active: parsed.active,
   };
 }

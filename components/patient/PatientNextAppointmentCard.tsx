@@ -11,10 +11,10 @@ type PatientNextAppointmentCardProps = {
 
 function formatAppointmentDate(value: string | null) {
   if (!value) {
-    return "Data ainda não informada";
+    return "Data ainda nao informada";
   }
 
-  return format(new Date(value), "EEEE, dd 'de' MMMM 'às' HH:mm", {
+  return format(new Date(value), "EEEE, dd 'de' MMMM 'as' HH:mm", {
     locale: ptBR,
   });
 }
@@ -25,8 +25,7 @@ export function PatientNextAppointmentCard({
   if (!appointment) {
     return (
       <EmptyState
-        description="Quando uma nova consulta for marcada, ela aparecerá aqui com data e horário."
-        emoji="📅"
+        description="Quando uma nova consulta for marcada, ela aparecera aqui com data e horario."
         title="Sem consulta agendada"
       />
     );
@@ -37,7 +36,7 @@ export function PatientNextAppointmentCard({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-medium text-emerald-800">
-            Sua próxima consulta
+            Sua proxima consulta
           </p>
           <h3 className="mt-2 text-2xl font-semibold text-slate-950">
             {formatAppointmentDate(appointment.scheduled_at)}
@@ -51,7 +50,7 @@ export function PatientNextAppointmentCard({
         </p>
       ) : (
         <p className="mt-4 text-sm leading-6 text-slate-600">
-          O profissional ainda não adicionou observações para esta consulta.
+          O profissional ainda nao adicionou observacoes para esta consulta.
         </p>
       )}
     </div>

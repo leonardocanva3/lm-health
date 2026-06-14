@@ -109,7 +109,7 @@ export async function getPublicPatientAccessData(
       adminClient
         .from("patient_notes")
         .select(
-          "id, workspace_id, patient_id, professional_id, title, content, emoji, active, created_at, updated_at",
+          "id, workspace_id, patient_id, professional_id, title, content, active, created_at, updated_at",
         )
         .eq("workspace_id", workspaceId)
         .eq("patient_id", patient.id)
@@ -118,7 +118,7 @@ export async function getPublicPatientAccessData(
       adminClient
         .from("patient_resources")
         .select(
-          "id, workspace_id, patient_id, professional_id, type, title, description, url, storage_path, filename, mime_type, emoji, active, created_at, updated_at",
+          "id, workspace_id, patient_id, professional_id, type, title, description, url, storage_path, filename, mime_type, active, created_at, updated_at",
         )
         .eq("workspace_id", workspaceId)
         .eq("patient_id", patient.id)

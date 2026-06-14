@@ -349,7 +349,6 @@ export default function PacientePage() {
           ) : (
             <EmptyState
               description="Quando novas consultas forem agendadas, elas aparecerão aqui."
-              emoji="📅"
               title="Nenhuma consulta futura"
             />
           )}

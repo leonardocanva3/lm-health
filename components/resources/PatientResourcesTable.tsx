@@ -22,14 +22,11 @@ export function PatientResourcesTable({
   if (resources.length === 0) {
     return (
       <Card className="p-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl">
-          🔗
-        </div>
-        <h2 className="mt-4 text-lg font-semibold text-slate-950">
+        <h2 className="text-lg font-semibold text-slate-950">
           Nenhum recurso cadastrado
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
-          Adicione o primeiro link, vídeo, PDF por URL ou material para um paciente.
+          Adicione o primeiro link, video, PDF por URL ou material para um paciente.
         </p>
       </Card>
     );
@@ -51,7 +48,7 @@ export function PatientResourcesTable({
               <th className="px-6 py-3 font-medium">Paciente</th>
               <th className="px-6 py-3 font-medium">Tipo</th>
               <th className="px-6 py-3 font-medium">Status</th>
-              <th className="px-6 py-3 text-right font-medium">Ações</th>
+              <th className="px-6 py-3 text-right font-medium">Acoes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -59,11 +56,10 @@ export function PatientResourcesTable({
               <tr key={resource.id}>
                 <td className="max-w-sm px-6 py-5">
                   <p className="text-sm font-semibold text-slate-950">
-                    <span className="mr-2">{resource.emoji || "🔗"}</span>
                     {resource.title}
                   </p>
                   <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
-                    {resource.description || resource.url || "Sem descrição"}
+                    {resource.description || resource.url || "Sem descricao"}
                   </p>
                 </td>
                 <td className="px-6 py-5 text-sm text-slate-600">

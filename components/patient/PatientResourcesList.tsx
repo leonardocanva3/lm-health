@@ -7,19 +7,18 @@ type PatientResourcesListProps = {
 };
 
 const resourceGroups = [
-  { key: "pdf", title: "PDFs e leituras", emoji: "📚" },
-  { key: "youtube", title: "Vídeos", emoji: "🎥" },
-  { key: "spotify", title: "Spotify", emoji: "🎧" },
-  { key: "links", title: "Links úteis", emoji: "🔗" },
-  { key: "others", title: "Outros materiais", emoji: "📎" },
+  { key: "pdf", title: "PDFs e leituras" },
+  { key: "youtube", title: "Videos" },
+  { key: "spotify", title: "Spotify" },
+  { key: "links", title: "Links uteis" },
+  { key: "others", title: "Outros materiais" },
 ] as const;
 
 export function PatientResourcesList({ resources }: PatientResourcesListProps) {
   if (resources.length === 0) {
     return (
       <EmptyState
-        description="Quando materiais, links ou vídeos forem enviados, você poderá acessá-los por aqui."
-        emoji="📚"
+        description="Quando materiais, links ou videos forem enviados, voce podera acessa-los por aqui."
         title="Nenhum material enviado ainda"
       />
     );
@@ -51,7 +50,6 @@ export function PatientResourcesList({ resources }: PatientResourcesListProps) {
         return (
           <section key={group.key}>
             <h3 className="text-sm font-semibold text-slate-700">
-              <span className="mr-2">{group.emoji}</span>
               {group.title}
             </h3>
             <div className="mt-3 grid gap-4 lg:grid-cols-2">

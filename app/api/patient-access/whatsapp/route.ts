@@ -2,11 +2,9 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/auth/roles";
 import {
-  createPatientAccessToken,
-  getPatientAccessBaseUrl,
-  hashPatientAccessToken,
+  ensurePatientAuthAccess,
+  getPatientRedirectUrl,
   normalizeBrazilPhone,
-  PATIENT_ACCESS_TOKEN_DAYS,
   type PatientAccessPatient,
 } from "@/lib/patient-access/server";
 
@@ -159,34 +157,37 @@ export async function POST(request: Request) {
       return jsonError("Cadastre um telefone para enviar o acesso pelo WhatsApp.");
     }
 
-    const token = createPatientAccessToken();
-    const tokenHash = hashPatientAccessToken(token);
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + PATIENT_ACCESS_TOKEN_DAYS);
+    const { email } = await ensurePatientAuthAccess({
+      adminClient,
+      patient,
+      workspaceId,
+    });
 
-    const { error: tokenError } = await adminClient
-      .from("patient_access_tokens")
-      .insert({
-        expires_at: expiresAt.toISOString(),
-        patient_id: patient.id,
-        token_hash: tokenHash,
-        workspace_id: workspaceId,
+    const { data: linkData, error: linkError } =
+      await adminClient.auth.admin.generateLink({
+        email,
+        options: {
+          redirectTo: getPatientRedirectUrl(),
+        },
+        type: "magiclink",
       });
 
-    if (tokenError) {
-      return jsonError("Nao foi possivel gerar o link seguro.", 500, {
-        errorMessage: tokenError.message,
+    const accessLink = linkData.properties?.action_link;
+
+    if (linkError || !accessLink) {
+      return jsonError("Nao foi possivel gerar o link magico.", 500, {
+        errorMessage: linkError?.message,
+        redirectTo: getPatientRedirectUrl(),
       });
     }
 
-    const accessLink = `${getPatientAccessBaseUrl()}/paciente/acessar?token=${encodeURIComponent(token)}`;
     const message = buildWhatsAppMessage(patient.name, accessLink);
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
     return Response.json({
       accessLink,
-      expiresAt: expiresAt.toISOString(),
       message,
+      redirectTo: getPatientRedirectUrl(),
       whatsappUrl,
     });
   } catch (error) {

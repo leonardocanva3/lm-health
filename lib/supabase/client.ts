@@ -4,6 +4,10 @@ import type { Database } from "@/types/database";
 
 let browserClient: ReturnType<typeof createClient<Database>> | null = null;
 
+type BrowserSupabaseClientOptions = {
+  detectSessionInUrl?: boolean;
+};
+
 export function getSupabaseBrowserEnvStatus() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -47,20 +51,26 @@ function getSupabaseEnv() {
   return { supabaseAnonKey, supabaseUrl };
 }
 
-export function createBrowserSupabaseClient() {
-  if (browserClient) {
+export function createBrowserSupabaseClient(options?: BrowserSupabaseClientOptions) {
+  if (!options && browserClient) {
     return browserClient;
   }
 
   const { supabaseAnonKey, supabaseUrl } = getSupabaseEnv();
 
-  browserClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      detectSessionInUrl: options?.detectSessionInUrl ?? true,
       persistSession: true,
     },
   });
+
+  if (options) {
+    return client;
+  }
+
+  browserClient = client;
 
   return browserClient;
 }

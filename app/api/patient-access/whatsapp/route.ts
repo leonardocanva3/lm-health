@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/auth/roles";
 import {
   ensurePatientAuthAccess,
+  getPatientAuthCallbackUrl,
   getPatientRedirectUrl,
   normalizeBrazilPhone,
   type PatientAccessPatient,
@@ -167,7 +168,7 @@ export async function POST(request: Request) {
       await adminClient.auth.admin.generateLink({
         email,
         options: {
-          redirectTo: getPatientRedirectUrl(),
+          redirectTo: getPatientAuthCallbackUrl(),
         },
         type: "magiclink",
       });
@@ -177,7 +178,7 @@ export async function POST(request: Request) {
     if (linkError || !accessLink) {
       return jsonError("Nao foi possivel gerar o link magico.", 500, {
         errorMessage: linkError?.message,
-        redirectTo: getPatientRedirectUrl(),
+        redirectTo: getPatientAuthCallbackUrl(),
       });
     }
 
@@ -187,7 +188,8 @@ export async function POST(request: Request) {
     return Response.json({
       accessLink,
       message,
-      redirectTo: getPatientRedirectUrl(),
+      finalRedirectTo: getPatientRedirectUrl(),
+      redirectTo: getPatientAuthCallbackUrl(),
       whatsappUrl,
     });
   } catch (error) {

@@ -50,6 +50,10 @@ export function getPatientAccessBaseUrl() {
   return "https://app.oleonardomachado.com.br";
 }
 
+export function getPatientAuthCallbackUrl() {
+  return `${getPatientAccessBaseUrl()}/auth/callback?next=/paciente`;
+}
+
 export function normalizeBrazilPhone(value: string | null) {
   const digits = value?.replace(/\D/g, "") ?? "";
 

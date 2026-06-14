@@ -3,13 +3,14 @@ import type { Database } from "@/types/database";
 
 export type PatientRow = Database["public"]["Tables"]["patients"]["Row"];
 
+const patientSelect =
+  "id, workspace_id, profile_id, professional_id, name, email, phone, birth_date, active, public_access_token_hash, public_access_token_created_at, public_access_enabled, created_at, updated_at";
+
 export async function listPatients(workspaceId: string): Promise<PatientRow[]> {
   const supabase = createBrowserSupabaseClient();
   const { data, error } = await supabase
     .from("patients")
-    .select(
-      "id, workspace_id, profile_id, professional_id, name, email, phone, birth_date, active, created_at, updated_at",
-    )
+    .select(patientSelect)
     .eq("workspace_id", workspaceId)
     .order("created_at", { ascending: false });
 
@@ -41,9 +42,7 @@ export async function getPatientById(
   const supabase = createBrowserSupabaseClient();
   const { data, error } = await supabase
     .from("patients")
-    .select(
-      "id, workspace_id, profile_id, professional_id, name, email, phone, birth_date, active, created_at, updated_at",
-    )
+    .select(patientSelect)
     .eq("workspace_id", workspaceId)
     .eq("id", patientId)
     .maybeSingle();
@@ -62,9 +61,7 @@ export async function getPatientByProfile(
   const supabase = createBrowserSupabaseClient();
   const { data, error } = await supabase
     .from("patients")
-    .select(
-      "id, workspace_id, profile_id, professional_id, name, email, phone, birth_date, active, created_at, updated_at",
-    )
+    .select(patientSelect)
     .eq("workspace_id", workspaceId)
     .eq("profile_id", profileId)
     .eq("active", true)

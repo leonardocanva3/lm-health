@@ -102,6 +102,9 @@ export type Database = {
           phone: string | null;
           birth_date: string | null;
           active: boolean;
+          public_access_token_hash: string | null;
+          public_access_token_created_at: string | null;
+          public_access_enabled: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -115,6 +118,9 @@ export type Database = {
           phone?: string | null;
           birth_date?: string | null;
           active?: boolean;
+          public_access_token_hash?: string | null;
+          public_access_token_created_at?: string | null;
+          public_access_enabled?: boolean;
           created_at?: string;
           updated_at?: string;
         };

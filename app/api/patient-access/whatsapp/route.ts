@@ -2,9 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/auth/roles";
 import {
-  ensurePatientAuthAccess,
-  getPatientAuthCallbackUrl,
-  getPatientRedirectUrl,
+  ensurePatientPublicAccess,
   normalizeBrazilPhone,
   type PatientAccessPatient,
 } from "@/lib/patient-access/server";
@@ -103,8 +101,8 @@ async function getAuthorizedAdmin(request: Request) {
   return { adminClient, profile };
 }
 
-function buildWhatsAppMessage(patientName: string, accessLink: string) {
-  return `Olá, ${patientName}! Sua Área do Paciente foi criada.\n\nAcesse pelo link seguro:\n${accessLink}\n\nPor lá você poderá visualizar orientações, materiais e informações compartilhadas durante o acompanhamento.`;
+function buildWhatsAppMessage(accessLink: string) {
+  return accessLink;
 }
 
 export async function POST(request: Request) {
@@ -131,7 +129,9 @@ export async function POST(request: Request) {
 
     const { data: patientData, error: patientError } = await adminClient
       .from("patients")
-      .select("id, workspace_id, profile_id, name, email, phone, active")
+      .select(
+        "id, workspace_id, profile_id, name, email, phone, active, public_access_token_hash, public_access_token_created_at, public_access_enabled",
+      )
       .eq("id", patientId)
       .eq("workspace_id", workspaceId)
       .maybeSingle();
@@ -158,38 +158,21 @@ export async function POST(request: Request) {
       return jsonError("Cadastre um telefone para enviar o acesso pelo WhatsApp.");
     }
 
-    const { email } = await ensurePatientAuthAccess({
+    const { accessLink } = await ensurePatientPublicAccess({
       adminClient,
       patient,
       workspaceId,
     });
+    console.log("[patient-access-whatsapp] public access url", {
+      startsWithPatientAccess: accessLink.includes("/paciente/acesso/"),
+    });
 
-    const { data: linkData, error: linkError } =
-      await adminClient.auth.admin.generateLink({
-        email,
-        options: {
-          redirectTo: getPatientAuthCallbackUrl(),
-        },
-        type: "magiclink",
-      });
-
-    const accessLink = linkData.properties?.action_link;
-
-    if (linkError || !accessLink) {
-      return jsonError("Nao foi possivel gerar o link magico.", 500, {
-        errorMessage: linkError?.message,
-        redirectTo: getPatientAuthCallbackUrl(),
-      });
-    }
-
-    const message = buildWhatsAppMessage(patient.name, accessLink);
+    const message = buildWhatsAppMessage(accessLink);
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
     return Response.json({
       accessLink,
       message,
-      finalRedirectTo: getPatientRedirectUrl(),
-      redirectTo: getPatientAuthCallbackUrl(),
       whatsappUrl,
     });
   } catch (error) {

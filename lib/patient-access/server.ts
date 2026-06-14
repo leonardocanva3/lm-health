@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes } from "node:crypto";
 
 import type { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/types/database";
@@ -9,7 +9,17 @@ type SupabaseAdminClient = ReturnType<typeof createSupabaseAdminClient>;
 
 export type PatientAccessPatient = Pick<
   Database["public"]["Tables"]["patients"]["Row"],
-  "active" | "email" | "id" | "name" | "phone" | "profile_id" | "workspace_id"
+  | "active"
+  | "birth_date"
+  | "email"
+  | "id"
+  | "name"
+  | "phone"
+  | "profile_id"
+  | "public_access_enabled"
+  | "public_access_token_created_at"
+  | "public_access_token_hash"
+  | "workspace_id"
 >;
 
 type PatientProfile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -50,8 +60,37 @@ export function getPatientAccessBaseUrl() {
   return "https://app.oleonardomachado.com.br";
 }
 
-export function getPatientAuthCallbackUrl() {
-  return `${getPatientAccessBaseUrl()}/auth/callback?next=/paciente`;
+export function getPatientPublicAccessUrl(token: string) {
+  return `${getPatientAccessBaseUrl()}/paciente/acesso/${encodeURIComponent(token)}`;
+}
+
+function getPatientPublicAccessSecret() {
+  const secret =
+    process.env.PATIENT_PUBLIC_ACCESS_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!secret) {
+    throw new Error("Configure PATIENT_PUBLIC_ACCESS_SECRET para gerar links publicos.");
+  }
+
+  return secret;
+}
+
+function createPublicAccessToken({
+  createdAt,
+  patientId,
+  workspaceId,
+}: {
+  createdAt: string;
+  patientId: string;
+  workspaceId: string;
+}) {
+  return createHmac("sha256", getPatientPublicAccessSecret())
+    .update(`${workspaceId}:${patientId}:${createdAt}`)
+    .digest("base64url");
+}
+
+export function hashPatientPublicAccessToken(token: string) {
+  return hashPatientAccessToken(token);
 }
 
 export function normalizeBrazilPhone(value: string | null) {
@@ -66,6 +105,128 @@ export function normalizeBrazilPhone(value: string | null) {
   }
 
   return `55${digits}`;
+}
+
+export async function ensurePatientPublicAccess({
+  adminClient,
+  patient,
+  workspaceId,
+}: {
+  adminClient: SupabaseAdminClient;
+  patient: PatientAccessPatient;
+  workspaceId: string;
+}) {
+  if (patient.workspace_id !== workspaceId) {
+    throw new Error("Paciente nao pertence a este workspace.");
+  }
+
+  if (!patient.active) {
+    throw new Error("Ative o paciente antes de enviar o acesso.");
+  }
+
+  const createdAt =
+    patient.public_access_token_created_at ?? new Date().toISOString();
+  const token = createPublicAccessToken({
+    createdAt,
+    patientId: patient.id,
+    workspaceId,
+  });
+  const tokenHash = hashPatientPublicAccessToken(token);
+
+  if (
+    patient.public_access_enabled &&
+    patient.public_access_token_created_at &&
+    patient.public_access_token_hash === tokenHash
+  ) {
+    return {
+      accessLink: getPatientPublicAccessUrl(token),
+      token,
+      tokenHash,
+    };
+  }
+
+  const { error } = await adminClient
+    .from("patients")
+    .update({
+      public_access_enabled: true,
+      public_access_token_created_at: createdAt,
+      public_access_token_hash: tokenHash,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", patient.id)
+    .eq("workspace_id", workspaceId);
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    accessLink: getPatientPublicAccessUrl(token),
+    token,
+    tokenHash,
+  };
+}
+
+export async function regeneratePatientPublicAccess({
+  adminClient,
+  patient,
+  workspaceId,
+}: {
+  adminClient: SupabaseAdminClient;
+  patient: PatientAccessPatient;
+  workspaceId: string;
+}) {
+  const createdAt = new Date().toISOString();
+  const token = createPublicAccessToken({
+    createdAt,
+    patientId: patient.id,
+    workspaceId,
+  });
+  const tokenHash = hashPatientPublicAccessToken(token);
+
+  const { error } = await adminClient
+    .from("patients")
+    .update({
+      public_access_enabled: true,
+      public_access_token_created_at: createdAt,
+      public_access_token_hash: tokenHash,
+      updated_at: createdAt,
+    })
+    .eq("id", patient.id)
+    .eq("workspace_id", workspaceId);
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    accessLink: getPatientPublicAccessUrl(token),
+    token,
+    tokenHash,
+  };
+}
+
+export async function disablePatientPublicAccess({
+  adminClient,
+  patientId,
+  workspaceId,
+}: {
+  adminClient: SupabaseAdminClient;
+  patientId: string;
+  workspaceId: string;
+}) {
+  const { error } = await adminClient
+    .from("patients")
+    .update({
+      public_access_enabled: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", patientId)
+    .eq("workspace_id", workspaceId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 async function findAuthUserByEmail(

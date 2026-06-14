@@ -227,6 +227,11 @@ export default function AdminOrientacoesPage() {
     );
   }
 
+  const notesCountText =
+    notes.length === 1
+      ? "1 orientação cadastrada."
+      : `${notes.length} orientações cadastradas.`;
+
   return (
     <AppShell section="admin" workspace={workspace}>
       <div className="space-y-8">
@@ -241,8 +246,7 @@ export default function AdminOrientacoesPage() {
               mantendo tudo vinculado ao seu ambiente.
             </p>
             <p className="mt-4 text-sm text-slate-500">
-              {notes.length} orientação{notes.length === 1 ? "" : "ões"} cadastrada
-              {notes.length === 1 ? "" : "s"}.
+              {notesCountText}
             </p>
           </div>
           <Button onClick={handleSignOut} variant="secondary">

@@ -31,7 +31,7 @@ export type AppointmentPayload = {
 };
 
 export function combineAppointmentDateTime(date: string, time: string) {
-  return `${date}T${time}:00`;
+  return new Date(`${date}T${time}:00`).toISOString();
 }
 
 export function toAppointmentPayload(

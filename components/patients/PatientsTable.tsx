@@ -8,17 +8,19 @@ import { PatientStatusBadge } from "@/components/patients/PatientStatusBadge";
 import type { PatientRow } from "@/lib/patients/queries";
 
 type PatientsTableProps = {
+  busyAccessPatientId?: string | null;
   busyPatientId?: string | null;
-  onCreateAccess: (patient: PatientRow) => void;
   onEdit: (patient: PatientRow) => void;
+  onSendAccess: (patient: PatientRow) => void;
   onToggleActive: (patient: PatientRow) => void;
   patients: PatientRow[];
 };
 
 export function PatientsTable({
+  busyAccessPatientId,
   busyPatientId,
-  onCreateAccess,
   onEdit,
+  onSendAccess,
   onToggleActive,
   patients,
 }: PatientsTableProps) {
@@ -95,11 +97,19 @@ export function PatientsTable({
                       Editar
                     </Button>
                     <Button
-                      onClick={() => onCreateAccess(patient)}
+                      disabled={!patient.email || busyAccessPatientId === patient.id}
+                      onClick={() => onSendAccess(patient)}
+                      title={
+                        patient.email
+                          ? "Enviar link mágico para o email do paciente"
+                          : "Cadastre um email para enviar acesso"
+                      }
                       type="button"
                       variant="secondary"
                     >
-                      Criar acesso
+                      {busyAccessPatientId === patient.id
+                        ? "Enviando..."
+                        : "Enviar acesso"}
                     </Button>
                     <Button
                       disabled={busyPatientId === patient.id}

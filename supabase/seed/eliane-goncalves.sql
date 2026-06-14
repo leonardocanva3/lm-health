@@ -1,8 +1,8 @@
--- PILOT SEED ONLY: Eliane Goncalves.
+-- PILOT SEED ONLY: Eliane Gonçalves.
 -- Do not run this file in production.
 --
 -- Purpose:
---   Create isolated pilot data for the Eliane Goncalves patient area.
+--   Create isolated pilot data for the Eliane Gonçalves patient area.
 --
 -- Before running:
 --   1. Create these users in Supabase Auth with test/pilot-only passwords:
@@ -52,7 +52,7 @@ with workspace_upsert as (
     updated_at
   )
   values (
-    'Eliane Goncalves',
+    'Eliane Gonçalves',
     'eliane-goncalves',
     'https://placehold.co/512x512/png?text=EG',
     '#7C5C52',
@@ -114,7 +114,7 @@ admin_profile as (
   select
     admin_user.id,
     workspace_upsert.id,
-    'Eliane Goncalves',
+    'Eliane Gonçalves',
     admin_user.email,
     'owner',
     true,

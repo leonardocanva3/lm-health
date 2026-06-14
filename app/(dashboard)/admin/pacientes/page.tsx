@@ -16,6 +16,7 @@ import {
   signOut,
 } from "@/lib/auth/session";
 import type { SessionProfile } from "@/lib/auth/session";
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import {
   createPatient,
   setPatientActive,
@@ -31,8 +32,8 @@ import { ROUTES } from "@/lib/constants/routes";
 
 export default function AdminPatientsPage() {
   const router = useRouter();
+  const [busyAccessPatientId, setBusyAccessPatientId] = useState<string | null>(null);
   const [busyPatientId, setBusyPatientId] = useState<string | null>(null);
-  const [accessPatient, setAccessPatient] = useState<PatientRow | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientRow | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasSession, setHasSession] = useState(false);
@@ -132,6 +133,60 @@ export default function AdminPatientsPage() {
     }
 
     await refreshPatients(profile.workspaceId);
+  }
+
+  async function handleSendAccess(patient: PatientRow) {
+    if (!patient.email) {
+      setErrorMessage("Cadastre um email para enviar o acesso.");
+      return;
+    }
+
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setBusyAccessPatientId(patient.id);
+
+    try {
+      const supabase = createBrowserSupabaseClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error("Sessão ausente. Entre novamente para enviar o acesso.");
+      }
+
+      const response = await fetch("/api/patient-access", {
+        body: JSON.stringify({ patientId: patient.id }),
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+
+      const payload = (await response.json()) as {
+        error?: string;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Não foi possível enviar o acesso.");
+      }
+
+      if (profile?.workspaceId) {
+        await refreshPatients(profile.workspaceId);
+      }
+
+      setSuccessMessage(payload.message ?? "Link de acesso enviado para o paciente.");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível enviar o acesso.",
+      );
+    } finally {
+      setBusyAccessPatientId(null);
+    }
   }
 
   async function handleToggleActive(patient: PatientRow) {
@@ -252,40 +307,6 @@ export default function AdminPatientsPage() {
           </div>
         ) : null}
 
-        {accessPatient ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-sm font-medium text-emerald-800">
-                  Acesso do paciente
-                </p>
-                <h2 className="mt-2 text-xl font-semibold text-slate-950">
-                  {accessPatient.name}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Email sugerido: {accessPatient.email ?? "cadastre um email no paciente"}.
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Crie o usuário em Supabase Auth com uma senha temporária segura,
-                  crie um profile com role <strong>patient</strong> e depois
-                  vincule <strong>patients.profile_id</strong> ao ID desse usuário.
-                </p>
-              </div>
-              <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                Status:{" "}
-                <strong>
-                  {accessPatient.profile_id ? "acesso vinculado" : "não vinculado"}
-                </strong>
-              </div>
-            </div>
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <Button onClick={() => setAccessPatient(null)} type="button">
-                Entendi
-              </Button>
-            </div>
-          </div>
-        ) : null}
-
         <section className="grid gap-6 xl:grid-cols-[0.9fr_1.4fr]">
           <PatientForm
             onCancelEdit={() => setEditingPatient(null)}
@@ -293,9 +314,10 @@ export default function AdminPatientsPage() {
             patient={editingPatient}
           />
           <PatientsTable
+            busyAccessPatientId={busyAccessPatientId}
             busyPatientId={busyPatientId}
-            onCreateAccess={setAccessPatient}
             onEdit={setEditingPatient}
+            onSendAccess={handleSendAccess}
             onToggleActive={handleToggleActive}
             patients={patients}
           />
